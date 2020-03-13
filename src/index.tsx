@@ -1,18 +1,18 @@
 import React, { ReactElement, useEffect, useState, Fragment } from 'react'
-import { Form } from 'react-final-form'
+import { Form, useForm, useField } from 'react-final-form'
 
 const QUERY_PAGE_NUMBER = 'stepNumber'
 
 export interface WizardStepProps {
-    // children?: any
-    // validate?: Function
     hideFromHistory?: boolean
+    validate?: (values) => {}
+    // these are given implicitly
     isLastStep?: boolean
     isFirstStep?: boolean
     previous?: () => null
     next?: () => null
     reset?: () => null
-    validate?: (values) => {}
+    currentStep?: number
 }
 
 export interface WizardProps {
@@ -86,6 +86,20 @@ function getStepFromQuery() {
     return 0
 }
 
+const UpdateValuesState = ({ setValues }) => {
+    const form = useForm()
+    useEffect(() => {
+        const unsubscribe = form.subscribe(
+            ({ values }) => {
+                setValues(values)
+            },
+            { values: true },
+        )
+        return () => unsubscribe()
+    }, [])
+    return null
+}
+
 export const Wizard = (props: WizardProps) => {
     const {
         showValuesAsJson,
@@ -121,10 +135,10 @@ export const Wizard = (props: WizardProps) => {
             return {
                 ...state,
                 step: newStep,
-                values: {
-                    ...state.values,
-                    ...values,
-                },
+                // values: {
+                //     ...state.values,
+                //     ...values,
+                // },
             }
         })
     }
@@ -142,12 +156,14 @@ export const Wizard = (props: WizardProps) => {
     }
 
     const validate = (values) => {
-        console.log('called validate')
+        // console.log('called validate')
         const activeStep = steps[state.step]
         const errors = activeStep.props.validate
             ? activeStep.props.validate(values)
             : {}
-        console.log('errors', errors)
+        if (errors && Object.keys(errors).length) {
+            console.log('validation errors', errors)
+        }
         return errors
     }
 
@@ -179,32 +195,43 @@ export const Wizard = (props: WizardProps) => {
             validate={validate}
             onSubmit={handleSubmit}
         >
-            {({ handleSubmit, submitting, values }) => (
-                <form onSubmit={handleSubmit}>
-                    <Wrapper>
-                        {React.cloneElement(activeStep, {
-                            ...activeStep.props,
-                            isLastStep: state.step === childrenCount - 1,
-                            isFirstStep: state.step === 0,
-                            next: handleSubmit,
-                            reset,
-                            previous,
-                        })}
-                        {showValuesAsJson && (
-                            <pre
-                                style={{
-                                    minHeight: '60px',
-                                    background: '#eee',
-                                    margin: '20px 0',
-                                    padding: '20px',
-                                }}
-                            >
-                                {JSON.stringify(values, null, 4)}
-                            </pre>
-                        )}
-                    </Wrapper>
-                </form>
-            )}
+            {({ handleSubmit, ...rest }) => {
+                const stepProps = {
+                    isLastStep: state.step === childrenCount - 1,
+                    isFirstStep: state.step === 0,
+                    currentStep: state.step,
+                    next: handleSubmit,
+                    reset,
+                    previous,
+                }
+                return (
+                    <form onSubmit={handleSubmit}>
+                        <UpdateValuesState
+                            setValues={(values) =>
+                                setState((x) => ({ ...x, values }))
+                            }
+                        />
+                        <Wrapper {...stepProps}>
+                            {React.cloneElement(activeStep, {
+                                ...activeStep.props,
+                                ...stepProps,
+                            })}
+                            {showValuesAsJson && (
+                                <pre
+                                    style={{
+                                        minHeight: '60px',
+                                        background: '#eee',
+                                        margin: '20px 0',
+                                        padding: '20px',
+                                    }}
+                                >
+                                    {JSON.stringify(state.values, null, 4)}
+                                </pre>
+                            )}
+                        </Wrapper>
+                    </form>
+                )
+            }}
         </Form>
     )
 }

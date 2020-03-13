@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { render } from 'react-dom'
 import { Wizard, WizardStepProps } from '../src'
-import { Field, useField } from 'react-final-form'
+import { Field, useField, useForm } from 'react-final-form'
 import {
     Box,
     CSSReset,
@@ -13,6 +13,8 @@ import {
     Stack,
     Flex,
     BoxProps,
+    Checkbox,
+    CheckboxProps,
 } from '@chakra-ui/core'
 
 const App = () => {
@@ -24,8 +26,8 @@ const App = () => {
                 <Step1
                     validate={(values) => {
                         const errors = {} as any
-                        if (!values.text0) {
-                            errors.text0 = 'Filed required'
+                        if (!values.name) {
+                            errors.name = 'Field required'
                         }
                         return errors
                     }}
@@ -41,24 +43,28 @@ const App = () => {
 const Step0 = ({ next }: WizardStepProps) => {
     return (
         <Stack spacing={4} flex='1' justify='center' align='center'>
-            <Text fontSize='48px'>Begin the step form</Text>
-            <Text opacity={0.5} fontSize='24px'>
-                to test this awesome react component
-            </Text>
+            <Text fontSize='48px'>Welcome to multi-step-form</Text>
+            <Text fontSize='24px'>A react component baked with ❤️</Text>
             <Box flex='1' />
             <Button onClick={next}>begin</Button>
         </Stack>
     )
 }
 
-const Step1 = ({ next }: WizardStepProps) => {
+const Step1 = ({ next, previous }: WizardStepProps) => {
     return (
         <Stack spacing={4} flex='1'>
-            <Text>Insert some text</Text>
-            <TextInput name='text0' placeholder='Insert text 1' />
-            <ErrorMessage name='text0' />
+            <Text>Your name</Text>
+            <TextInput name='name' placeholder='Insert text 1' />
+            <ErrorMessage name='name' />
+            <SingleCheckbox name='iAmDev' placeholder='Insert text 1'>
+                i am developer
+            </SingleCheckbox>
             <Box flex='1' />
-            <Button onClick={next}>next</Button>
+            <Flex mt='auto' justifyContent='space-between'>
+                <Button onClick={previous}>previous</Button>
+                <Button onClick={next}>next</Button>
+            </Flex>
         </Stack>
     )
 }
@@ -93,10 +99,18 @@ const Step3 = ({ previous, next }: WizardStepProps) => {
 }
 
 const Step4 = ({ reset }: WizardStepProps) => {
+    const form = useForm()
     return (
         <Stack d='flex' spacing={4} flex='1' justify='center' align='center'>
             <Text fontSize='48px'>Finished 🥳</Text>
-            <Button onClick={reset}>reset</Button>
+            <Button
+                onClick={() => {
+                    reset()
+                    form.initialize({})
+                }}
+            >
+                reset
+            </Button>
         </Stack>
     )
 }
@@ -104,6 +118,23 @@ const Step4 = ({ reset }: WizardStepProps) => {
 export const TextInput = ({ name, ...rest }: { name } & InputProps) => {
     const { input, meta } = useField(name, { initialValue: rest.defaultValue })
     return <Input {...input} {...rest} isInvalid={meta.error && meta.touched} />
+}
+
+export const SingleCheckbox = ({
+    name,
+    children,
+}: { name } & CheckboxProps) => {
+    const {
+        input: { checked, ...input },
+        meta: { error, touched, invalid },
+    } = useField(name, {
+        type: 'checkbox', // important for RFF to manage the checked prop
+    })
+    return (
+        <Checkbox {...input} isInvalid={touched && invalid} my={4}>
+            {children}
+        </Checkbox>
+    )
 }
 
 export const ErrorMessage = ({ name, ...rest }: { name } & BoxProps) => {
