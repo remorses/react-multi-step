@@ -3,12 +3,19 @@
 ## Install
 
 ```
-npm install final-form react-final-form react-multi-step
+npm install react-multi-step final-form react-final-form
 ```
 
 <p align="center">
     <img src='https://raw.githubusercontent.com/remorses/react-multi-step/master/.github/video.gif' >
 </p>
+
+## Features
+
+-   keep the form state in local storage, you can close page and return to the same url and it reloads the form state
+-   keep the current step number in the url query, you can use history to navigate the steps
+-   use any form element from react-final-form
+-   validation of the form at every step
 
 ## Usage Example
 
