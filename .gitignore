@@ -8,7 +8,7 @@ yarn-error.log*
 play*
 dist/*
 esm
-
+public
 # Runtime data
 pids
 *.pid
@@ -78,3 +78,5 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+.now
