@@ -11,6 +11,7 @@ export interface WizardStepProps {
     isFirstStep?: boolean
     previous?: () => null
     next?: () => null
+    validate?: (values) => {}
     reset?: () => null
 }
 
@@ -50,19 +51,29 @@ function setValuesInStorage(values) {
 }
 
 const makeHash = () => {
-    return window.location.href
+    const url = new URL(window.location.href)
+    const search = url.searchParams
+    search.delete(QUERY_PAGE_NUMBER)
+    const hash = url.origin + url.pathname + search
+    console.log('made hash', hash)
+    return hash
 }
 
-function setStepInQuery(newStep) {
+function setStepInQuery(newStep, replace = false) {
     if (window.history.pushState) {
         const newurl = new URL(window.location.href)
         newurl.searchParams.set(QUERY_PAGE_NUMBER, newStep.toString())
         console.log('setting current step to the query string', newStep)
-        window.history.pushState(
+        const args: [string, string, string] = [
             window.history.state,
             'Step ' + newStep,
             newurl.search,
-        )
+        ]
+        if (replace) {
+            window.history.replaceState(...args)
+        } else {
+            window.history.pushState(...args)
+        }
     }
 }
 
@@ -80,7 +91,7 @@ export const Wizard = (props: WizardProps) => {
         showValuesAsJson,
         children,
         Wrapper = Fragment,
-        onSubmit = () => null,
+        onSubmit = (x) => alert(JSON.stringify(x, null, 4)),
     } = props
     const [state, setState] = useState({ step: 0, values: {} })
     const childrenCount = React.Children.count(children)
@@ -91,7 +102,7 @@ export const Wizard = (props: WizardProps) => {
         let values = getStoredValues()
         let step = getStepFromQuery()
         if (!step) {
-            setStepInQuery(0)
+            setStepInQuery(0, true)
         }
         setState((state) => ({
             ...state,
@@ -108,8 +119,12 @@ export const Wizard = (props: WizardProps) => {
                 setStepInQuery(newStep)
             }
             return {
+                ...state,
                 step: newStep,
-                values,
+                values: {
+                    ...state.values,
+                    ...values,
+                },
             }
         })
     }
@@ -127,13 +142,17 @@ export const Wizard = (props: WizardProps) => {
     }
 
     const validate = (values) => {
+        console.log('called validate')
         const activeStep = steps[state.step]
-        return activeStep.props.validate
+        const errors = activeStep.props.validate
             ? activeStep.props.validate(values)
             : {}
+        console.log('errors', errors)
+        return errors
     }
 
     const handleSubmit = (values) => {
+        console.log('called next')
         const isLastStep = state.step === childrenCount - 1
         if (isLastStep) {
             return onSubmit(values)
@@ -143,7 +162,9 @@ export const Wizard = (props: WizardProps) => {
 
     const reset = () => {
         setState((state) => {
-            setStepInQuery(0)
+            if (!steps[0].props?.hideFromHistory) {
+                setStepInQuery(0)
+            }
             setValuesInStorage(state.values)
             return { ...state, step: 0 }
         })

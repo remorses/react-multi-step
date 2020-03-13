@@ -12,15 +12,24 @@ import {
     Text,
     Stack,
     Flex,
+    BoxProps,
 } from '@chakra-ui/core'
 
 const App = () => {
     return (
         <ThemeProvider>
             <CSSReset />
-            <Wizard Wrapper={Wrapper}>
+            <Wizard showValuesAsJson Wrapper={Wrapper}>
                 <Step0 />
-                <Step1 />
+                <Step1
+                    validate={(values) => {
+                        const errors = {} as any
+                        if (!values.text0) {
+                            errors.text0 = 'Filed required'
+                        }
+                        return errors
+                    }}
+                />
                 <Step2 />
                 <Step3 />
                 <Step4 hideFromHistory />
@@ -33,9 +42,11 @@ const Step0 = ({ next }: WizardStepProps) => {
     return (
         <Stack spacing={4} flex='1' justify='center' align='center'>
             <Text fontSize='48px'>Begin the step form</Text>
-            <Text opacity={.5} fontSize='24px'>to test this awesome react component</Text>
+            <Text opacity={0.5} fontSize='24px'>
+                to test this awesome react component
+            </Text>
             <Box flex='1' />
-            <Button onClick={next}>brgin</Button>
+            <Button onClick={next}>begin</Button>
         </Stack>
     )
 }
@@ -44,7 +55,8 @@ const Step1 = ({ next }: WizardStepProps) => {
     return (
         <Stack spacing={4} flex='1'>
             <Text>Insert some text</Text>
-            <TextInput name='text2' placeholder='Insert text 1' />
+            <TextInput name='text0' placeholder='Insert text 1' />
+            <ErrorMessage name='text0' />
             <Box flex='1' />
             <Button onClick={next}>next</Button>
         </Stack>
@@ -54,7 +66,7 @@ const Step1 = ({ next }: WizardStepProps) => {
 const Step2 = ({ previous, next }: WizardStepProps) => {
     return (
         <Stack spacing={4} flex='1'>
-            <Text>Insert some text</Text>
+            <Text>Insert other text</Text>
             <TextInput name='text3' placeholder='Insert text 2' />
             <Box flex='1' />
             <Flex mt='auto' justifyContent='space-between'>
@@ -84,9 +96,7 @@ const Step4 = ({ reset }: WizardStepProps) => {
     return (
         <Stack d='flex' spacing={4} flex='1' justify='center' align='center'>
             <Text fontSize='48px'>Finished 🥳</Text>
-            <Button onClick={reset}>
-                reset
-            </Button>
+            <Button onClick={reset}>reset</Button>
         </Stack>
     )
 }
@@ -94,6 +104,17 @@ const Step4 = ({ reset }: WizardStepProps) => {
 export const TextInput = ({ name, ...rest }: { name } & InputProps) => {
     const { input, meta } = useField(name, { initialValue: rest.defaultValue })
     return <Input {...input} {...rest} isInvalid={meta.error && meta.touched} />
+}
+
+export const ErrorMessage = ({ name, ...rest }: { name } & BoxProps) => {
+    const {
+        meta: { error, touched },
+    } = useField(name, { subscription: { error: true, touched: true } })
+    return (
+        <Text {...rest} color='#f00'>
+            {touched && error}
+        </Text>
+    )
 }
 
 export const Wrapper = ({ children }) => {
