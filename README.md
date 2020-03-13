@@ -7,7 +7,7 @@ npm install final-form react-final-form react-multi-step
 ```
 
 <p align="center">
-    <img src='https://raw.githubusercontent.com/remorses/react-multi-step/master/.github/workflows/video.gif' >
+    <img src='https://raw.githubusercontent.com/remorses/react-multi-step/master/.github/video.gif' >
 </p>
 
 ## Usage Example
