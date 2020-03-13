@@ -3,7 +3,7 @@
 ## Install
 
 ```
-npm install react-multi-step final-form react-final-form
+npm install react-multi-steps final-form react-final-form
 ```
 
 <p align="center">
@@ -23,7 +23,7 @@ Check out the exmple folder for an up to date example
 
 ```tsx
 import React from 'react'
-import { Wizard, WizardStepProps } from '../src'
+import { Wizard, WizardStepProps } from 'react-multi-steps'
 import { Field } from 'react-final-form'
 
 const App = () => {

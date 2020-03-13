@@ -219,6 +219,7 @@ export const Wizard = (props: WizardProps) => {
                             {showValuesAsJson && (
                                 <pre
                                     style={{
+                                        opacity: .4,
                                         minHeight: '60px',
                                         background: '#eee',
                                         margin: '20px 0',
