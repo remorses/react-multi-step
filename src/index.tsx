@@ -11,8 +11,8 @@ export interface WizardStepProps {
     isFirstStep?: boolean
     previous?: () => null
     next?: () => null
-    validate?: (values) => {}
     reset?: () => null
+    validate?: (values) => {}
 }
 
 export interface WizardProps {
